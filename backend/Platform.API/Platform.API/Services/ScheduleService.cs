@@ -1,6 +1,6 @@
 ﻿namespace Platform.API.Services
 {
-    public class SceduleService
+    public class ScheduleService
     {
     }
 }
