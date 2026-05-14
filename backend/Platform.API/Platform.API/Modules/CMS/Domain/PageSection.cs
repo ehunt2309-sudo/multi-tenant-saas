@@ -1,0 +1,6 @@
+﻿namespace Platform.API.Modules.CMS.Domain
+{
+    public class PageSection
+    {
+    }
+}
