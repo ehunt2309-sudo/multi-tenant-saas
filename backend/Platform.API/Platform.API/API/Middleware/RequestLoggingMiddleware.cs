@@ -1,6 +1,6 @@
 ﻿namespace Platform.API.API.Middleware
 {
-    public class AuthMiddleware
+    public class RequestLoggingMiddleware
     {
     }
 }
