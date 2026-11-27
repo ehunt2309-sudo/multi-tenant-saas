@@ -41,26 +41,26 @@ public sealed class TenantDomain : BaseEntity
     public bool IsPrimary { get; set; }
 }
 
-public sealed record PublicTenantDto(string Name, string Slug, Industry Industry, string? PrimaryColor, string? LogoUrl, string Currency, string TimeZone);
+public sealed record PublicTenantDto(string Name, string Slug, Industry Industry, string? PrimaryColor, string? LogoUrl, string Currency, string TimeZone, decimal LoyaltyPointsPerCurrencyUnit);
 
 public sealed record TenantSummaryDto(Guid Id, string Name, string Slug, Industry Industry, bool IsActive, DateTime CreatedAt, IReadOnlyList<string> Domains);
 
 public sealed record CreateTenantRequest(
-    [property: Required, StringLength(150)] string Name,
-    [property: Required, StringLength(60)] string Slug,
+    [Required, StringLength(150)] string Name,
+    [Required, StringLength(60)] string Slug,
     Industry Industry,
-    [property: Required, StringLength(253)] string PrimaryDomain,
-    [property: Required, EmailAddress, StringLength(256)] string ManagerEmail,
-    [property: Required, StringLength(100)] string ManagerFirstName,
-    [property: Required, StringLength(100)] string ManagerLastName,
-    [property: Required, StringLength(128, MinimumLength = 12)] string ManagerPassword);
+    [Required, StringLength(253)] string PrimaryDomain,
+    [Required, EmailAddress, StringLength(256)] string ManagerEmail,
+    [Required, StringLength(100)] string ManagerFirstName,
+    [Required, StringLength(100)] string ManagerLastName,
+    [Required, StringLength(128, MinimumLength = 12)] string ManagerPassword);
 
 public sealed record UpdateTenantSettingsRequest(
-    [property: StringLength(7)] string? PrimaryColor,
-    [property: StringLength(500)] string? LogoUrl,
-    [property: Range(0, 100)] decimal LoyaltyPointsPerCurrencyUnit);
+    [StringLength(7)] string? PrimaryColor,
+    [StringLength(500)] string? LogoUrl,
+    [Range(0, 100)] decimal LoyaltyPointsPerCurrencyUnit);
 
-public sealed record AddDomainRequest([property: Required, StringLength(253)] string Host);
+public sealed record AddDomainRequest([Required, StringLength(253)] string Host);
 public sealed record SetTenantActiveRequest(bool IsActive);
 
 public sealed class TenantService(
@@ -76,7 +76,7 @@ public sealed class TenantService(
     {
         var id = tenant.TenantId ?? throw new BadRequestException("Tenant could not be resolved.");
         return await db.Tenants.AsNoTracking().Where(t => t.Id == id && t.IsActive)
-                   .Select(t => new PublicTenantDto(t.Name, t.Slug, t.Industry, t.PrimaryColor, t.LogoUrl, t.Currency, t.TimeZone))
+                   .Select(t => new PublicTenantDto(t.Name, t.Slug, t.Industry, t.PrimaryColor, t.LogoUrl, t.Currency, t.TimeZone, t.LoyaltyPointsPerCurrencyUnit))
                    .FirstOrDefaultAsync(ct)
                ?? throw new NotFoundException("Tenant not found.");
     }

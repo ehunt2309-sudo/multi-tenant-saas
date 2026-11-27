@@ -48,8 +48,9 @@ public sealed class AnalyticsService(AppDbContext db)
         return await db.Bookings.AsNoTracking()
             .Where(b => b.Status == BookingStatus.Completed && b.StartsAt >= f && b.StartsAt < t)
             .GroupBy(b => b.StartsAt.Date)
+            .OrderBy(g => g.Key)   // sort the groups first: SQL can't order by a field of the DTO built afterwards
             .Select(g => new DailyRevenueDto(g.Key, g.Sum(x => x.Price), g.Count()))
-            .OrderBy(x => x.Day).ToListAsync(ct);
+            .ToListAsync(ct);
     }
 
     public async Task<IReadOnlyList<TopCustomerDto>> TopCustomersAsync(int take, CancellationToken ct) =>

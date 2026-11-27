@@ -6,6 +6,7 @@ using Platform.API.Api.Configuration;
 using Platform.API.Api.Middleware;
 using Platform.API.Infrastructure.Persistence;
 using Platform.API.Shared.Extensions;
+using Platform.API.Shared.Utilities;
 using Serilog;
 
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger();
@@ -48,7 +49,12 @@ try
         .AddPlatformModules();
 
     builder.Services.AddControllers(o => o.Filters.Add<TenantRequiredFilter>())
-        .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+        .AddJsonOptions(o =>
+        {
+            o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            o.JsonSerializerOptions.Converters.Add(new UtcDateTimeConverter());
+            o.JsonSerializerOptions.Converters.Add(new UtcNullableDateTimeConverter());
+        });
 
     builder.Services.AddProblemDetails();
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();

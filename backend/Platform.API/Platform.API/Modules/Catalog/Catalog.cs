@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Platform.API.Core.Entities;
 using Platform.API.Infrastructure.Persistence;
@@ -32,23 +32,23 @@ public sealed class Product : AuditableEntity
 public sealed record ServiceOfferingDto(Guid Id, string Name, string? Description, int DurationMinutes, decimal Price, bool IsActive);
 
 public sealed record ServiceOfferingRequest(
-    [property: Required, StringLength(150)] string Name,
-    [property: StringLength(2000)] string? Description,
-    [property: Range(5, 1440)] int DurationMinutes,
-    [property: Range(0, 1000000)] decimal Price,
+    [Required, StringLength(150)] string Name,
+    [StringLength(2000)] string? Description,
+    [Range(5, 1440)] int DurationMinutes,
+    [Range(0, 1000000)] decimal Price,
     bool IsActive = true);
 
 public sealed record ProductDto(Guid Id, string Name, string? Description, decimal Price, int StockQuantity, string? ImageUrl, bool IsActive);
 
 public sealed record ProductRequest(
-    [property: Required, StringLength(150)] string Name,
-    [property: StringLength(2000)] string? Description,
-    [property: Range(0, 1000000)] decimal Price,
-    [property: Range(0, 1000000)] int StockQuantity,
-    [property: StringLength(500)] string? ImageUrl,
+    [Required, StringLength(150)] string Name,
+    [StringLength(2000)] string? Description,
+    [Range(0, 1000000)] decimal Price,
+    [Range(0, 1000000)] int StockQuantity,
+    [StringLength(500)] string? ImageUrl,
     bool IsActive = true);
 
-public sealed record StockAdjustRequest([property: Range(-100000, 100000)] int Delta);
+public sealed record StockAdjustRequest([Range(-100000, 100000)] int Delta);
 
 public sealed class ServiceOfferingService(AppDbContext db)
 {
@@ -156,3 +156,4 @@ public sealed class ProductService(AppDbContext db)
         p.IsActive = r.IsActive;
     }
 }
+

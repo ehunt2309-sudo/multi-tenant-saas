@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using Platform.API.Api.Configuration;
 using Platform.API.Modules.Bookings;
 using Platform.API.Shared.Constants;
 using Platform.API.Shared.Responses;
@@ -16,6 +18,11 @@ public sealed class BookingsController(BookingService bookings) : ControllerBase
         var created = await bookings.CreateAsync(request, ct);
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
+
+    /// <summary>Public: reserve without an account. No staff choice by design; members get that.</summary>
+    [HttpPost("guest"), AllowAnonymous, EnableRateLimiting(RateLimitingConfiguration.AuthPolicy)]
+    public async Task<ActionResult<GuestBookingConfirmation>> CreateGuest(GuestBookingRequest request, CancellationToken ct) =>
+        Ok(await bookings.CreateGuestAsync(request, ct));
 
     [HttpGet, Authorize(Policy = Policies.StaffOrManager)]
     public async Task<ActionResult<PagedResult<BookingDto>>> List(

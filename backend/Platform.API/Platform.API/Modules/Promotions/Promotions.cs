@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Platform.API.Core.Entities;
 using Platform.API.Infrastructure.Persistence;
@@ -24,12 +24,12 @@ public sealed record PromotionDto(Guid Id, string Title, string? Description, Da
     DiscountType DiscountType, decimal DiscountValue, bool IsActive);
 
 public sealed record PromotionRequest(
-    [property: Required, StringLength(150)] string Title,
-    [property: StringLength(2000)] string? Description,
+    [Required, StringLength(150)] string Title,
+    [StringLength(2000)] string? Description,
     DateTimeOffset StartsAt,
     DateTimeOffset EndsAt,
     DiscountType DiscountType,
-    [property: Range(0, 1000000)] decimal DiscountValue,
+    [Range(0, 1000000)] decimal DiscountValue,
     bool IsActive = true);
 
 public sealed class PromotionService(AppDbContext db)
@@ -91,3 +91,4 @@ public sealed class PromotionService(AppDbContext db)
         p.IsActive = r.IsActive;
     }
 }
+
