@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Platform.API.Core.Entities;
 using Platform.API.Core.Interfaces;
@@ -27,19 +27,19 @@ public sealed record StaffDto(Guid Id, string FirstName, string LastName, string
 public sealed record PublicStaffDto(Guid Id, string Name, string JobTitle);
 
 public sealed record CreateStaffRequest(
-    [property: Required, EmailAddress, StringLength(256)] string Email,
-    [property: Required, StringLength(128, MinimumLength = 12)] string Password,
-    [property: Required, StringLength(100)] string FirstName,
-    [property: Required, StringLength(100)] string LastName,
-    [property: Required, StringLength(100)] string JobTitle,
-    [property: Range(0, 100000)] decimal HourlyRate,
-    [property: Required] string Role);
+    [Required, EmailAddress, StringLength(256)] string Email,
+    [Required, StringLength(128, MinimumLength = 12)] string Password,
+    [Required, StringLength(100)] string FirstName,
+    [Required, StringLength(100)] string LastName,
+    [Required, StringLength(100)] string JobTitle,
+    [Range(0, 100000)] decimal HourlyRate,
+    [Required] string Role);
 
 public sealed record UpdateStaffRequest(
-    [property: Required, StringLength(100)] string FirstName,
-    [property: Required, StringLength(100)] string LastName,
-    [property: Required, StringLength(100)] string JobTitle,
-    [property: Range(0, 100000)] decimal HourlyRate,
+    [Required, StringLength(100)] string FirstName,
+    [Required, StringLength(100)] string LastName,
+    [Required, StringLength(100)] string JobTitle,
+    [Range(0, 100000)] decimal HourlyRate,
     bool IsActive);
 
 public static class StaffQueries
@@ -132,3 +132,4 @@ public sealed class StaffService(AppDbContext db, ICurrentUser currentUser, Pass
             staff.JobTitle, staff.IsActive, staff.HourlyRate);
     }
 }
+

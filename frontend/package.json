@@ -1,0 +1,5 @@
+{
+  "name": "saas-frontends",
+  "private": true,
+  "workspaces": ["shared", "clients/*"]
+}

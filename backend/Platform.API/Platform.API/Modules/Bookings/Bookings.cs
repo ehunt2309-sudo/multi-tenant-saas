@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Platform.API.Core.Entities;
@@ -42,11 +42,24 @@ public sealed record CreateBookingRequest(
     Guid ServiceOfferingId,
     Guid? StaffMemberId,
     DateTimeOffset StartsAt,
-    [property: Range(1, 50)] int PartySize,
-    [property: StringLength(500)] string? Notes,
+    [Range(1, 50)] int PartySize,
+    [StringLength(500)] string? Notes,
     Guid? CustomerId);          // only used when staff/manager books on behalf of a customer
 
 public sealed record UpdateBookingStatusRequest(BookingStatus Status);
+
+/// <summary>Booking without an account: deliberately no staff choice, just what / when / who to contact.</summary>
+public sealed record GuestBookingRequest(
+    Guid ServiceOfferingId,
+    DateTimeOffset StartsAt,
+    [Range(1, 10)] int PartySize,
+    [StringLength(500)] string? Notes,
+    [Required, StringLength(100)] string FirstName,
+    [Required, StringLength(100)] string LastName,
+    [Required, EmailAddress, StringLength(256)] string Email,
+    [StringLength(32)] string? Phone);
+
+public sealed record GuestBookingConfirmation(Guid Id, string ServiceName, DateTime StartsAt, DateTime EndsAt, BookingStatus Status);
 
 public sealed class BookingService(AppDbContext db, ICurrentUser user, ITenantProvider tenant, LoyaltyService loyalty)
 {
@@ -120,6 +133,65 @@ public sealed class BookingService(AppDbContext db, ICurrentUser user, ITenantPr
         });
 
         return await GetAsync(booking.Id, ct);
+    }
+
+    // ---------- create (guest) ----------
+    private const int MaxOpenGuestBookings = 3;
+
+    /// <summary>
+    /// Anonymous booking. Creates (or reuses) a walk-in customer with no login, always unassigned
+    /// to staff and always Pending until the venue confirms. Never touches registered customers' records.
+    /// </summary>
+    public async Task<GuestBookingConfirmation> CreateGuestAsync(GuestBookingRequest r, CancellationToken ct)
+    {
+        var service = await db.ServiceOfferings.AsNoTracking().FirstOrDefaultAsync(s => s.Id == r.ServiceOfferingId && s.IsActive, ct)
+                      ?? throw new NotFoundException("Service not found.");
+
+        var now = DateTime.UtcNow;
+        var start = r.StartsAt.UtcDateTime;
+        if (start <= now) throw new BadRequestException("Bookings must be in the future.");
+        if (start > now.AddYears(1)) throw new BadRequestException("Bookings can be made up to one year ahead.");
+
+        var email = r.Email.Trim().ToLowerInvariant();
+        var customer = await db.Customers.FirstOrDefaultAsync(c => c.UserId == null && !c.IsAnonymized && c.Email == email, ct);
+        if (customer is null)
+        {
+            customer = new Customer
+            {
+                FirstName = r.FirstName.Trim(),
+                LastName = r.LastName.Trim(),
+                Email = email,
+                Phone = r.Phone?.Trim(),
+                MarketingConsent = false
+            };
+            db.Customers.Add(customer);
+            db.LoyaltyAccounts.Add(new LoyaltyAccount { CustomerId = customer.Id });
+        }
+        else
+        {
+            // Brake for abuse: an anonymous caller can't pile up unlimited open reservations.
+            var open = await db.Bookings.CountAsync(b => b.CustomerId == customer.Id
+                && (b.Status == BookingStatus.Pending || b.Status == BookingStatus.Confirmed) && b.StartsAt > now, ct);
+            if (open >= MaxOpenGuestBookings)
+                throw new ConflictException("There are already several open reservations for this email. Please contact the venue to change them.");
+        }
+
+        var booking = new Booking
+        {
+            CustomerId = customer.Id,
+            StaffMemberId = null,
+            ServiceOfferingId = service.Id,
+            StartsAt = start,
+            EndsAt = start.AddMinutes(service.DurationMinutes),
+            PartySize = r.PartySize,
+            Price = service.Price,
+            Notes = r.Notes?.Trim(),
+            Status = BookingStatus.Pending
+        };
+        db.Bookings.Add(booking);
+        await db.SaveChangesAsync(ct);
+
+        return new GuestBookingConfirmation(booking.Id, service.Name, booking.StartsAt, booking.EndsAt, booking.Status);
     }
 
     // ---------- read ----------
@@ -215,3 +287,4 @@ public sealed class BookingService(AppDbContext db, ICurrentUser user, ITenantPr
             await loyalty.ApplyAsync(customer.Id, points, LoyaltyTransactionType.Earned, "Completed booking", b.Id, ct);
     }
 }
+

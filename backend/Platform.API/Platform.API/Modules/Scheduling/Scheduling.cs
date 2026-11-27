@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Platform.API.Core.Entities;
 using Platform.API.Core.Interfaces;
@@ -23,10 +23,10 @@ public sealed record ShiftDto(Guid Id, Guid StaffMemberId, string StaffName, Dat
     DateTime? ClockInAt, DateTime? ClockOutAt, string? Notes);
 
 public sealed record CreateShiftRequest(
-    Guid StaffMemberId, DateTimeOffset StartsAt, DateTimeOffset EndsAt, [property: StringLength(500)] string? Notes);
+    Guid StaffMemberId, DateTimeOffset StartsAt, DateTimeOffset EndsAt, [StringLength(500)] string? Notes);
 
 public sealed record UpdateShiftRequest(
-    DateTimeOffset StartsAt, DateTimeOffset EndsAt, [property: StringLength(500)] string? Notes);
+    DateTimeOffset StartsAt, DateTimeOffset EndsAt, [StringLength(500)] string? Notes);
 
 public sealed record HoursReportRow(Guid StaffMemberId, string StaffName, decimal ScheduledHours, decimal WorkedHours, decimal Earned);
 
@@ -170,3 +170,4 @@ public sealed class ShiftService(AppDbContext db, ICurrentUser user)
     private async Task<ShiftDto> GetAsync(Guid id, CancellationToken ct) =>
         await Project(db.Shifts.AsNoTracking().Where(s => s.Id == id)).FirstAsync(ct);
 }
+

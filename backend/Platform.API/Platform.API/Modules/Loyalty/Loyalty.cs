@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Platform.API.Core.Entities;
 using Platform.API.Core.Interfaces;
@@ -40,8 +40,8 @@ public sealed record LoyaltyTransactionDto(Guid Id, int Points, int BalanceAfter
     string Reason, DateTime CreatedAt);
 
 public sealed record PointsRequest(
-    [property: Range(1, 100000)] int Points,
-    [property: Required, StringLength(200)] string Reason);
+    [Range(1, 100000)] int Points,
+    [Required, StringLength(200)] string Reason);
 
 public sealed class LoyaltyService(AppDbContext db, ICurrentUser user, AuditService audit)
 {
@@ -125,3 +125,4 @@ public sealed class LoyaltyService(AppDbContext db, ICurrentUser user, AuditServ
             throw new NotFoundException("Customer not found.");
     }
 }
+

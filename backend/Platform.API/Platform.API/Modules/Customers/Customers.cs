@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using Platform.API.Core.Entities;
 using Platform.API.Core.Interfaces;
@@ -33,20 +33,20 @@ public sealed record CustomerDto(
     string? Gender, bool MarketingConsent, decimal TotalSpend, int VisitCount, DateTime? LastVisitAt);
 
 public sealed record CreateCustomerRequest(
-    [property: Required, StringLength(100)] string FirstName,
-    [property: Required, StringLength(100)] string LastName,
-    [property: EmailAddress, StringLength(256)] string? Email,
-    [property: StringLength(32)] string? Phone,
+    [Required, StringLength(100)] string FirstName,
+    [Required, StringLength(100)] string LastName,
+    [EmailAddress, StringLength(256)] string? Email,
+    [StringLength(32)] string? Phone,
     DateOnly? DateOfBirth,
-    [property: StringLength(32)] string? Gender,
+    [StringLength(32)] string? Gender,
     bool MarketingConsent);
 
 public sealed record UpdateCustomerRequest(
-    [property: Required, StringLength(100)] string FirstName,
-    [property: Required, StringLength(100)] string LastName,
-    [property: StringLength(32)] string? Phone,
+    [Required, StringLength(100)] string FirstName,
+    [Required, StringLength(100)] string LastName,
+    [StringLength(32)] string? Phone,
     DateOnly? DateOfBirth,
-    [property: StringLength(32)] string? Gender,
+    [StringLength(32)] string? Gender,
     bool MarketingConsent);
 
 public static class CustomerRules
@@ -177,3 +177,4 @@ public sealed class CustomerService(AppDbContext db, ICurrentUser user, AuditSer
         await db.SaveChangesAsync(ct);
     }
 }
+

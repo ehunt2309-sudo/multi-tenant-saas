@@ -39,6 +39,7 @@ public sealed class AuthService(
 
         var user = new User
         {
+            TenantId = tenantId,   // must be set BEFORE the token is minted below (SaveChanges would stamp it too late)
             Email = email,
             NormalizedEmail = normalized,
             FirstName = r.FirstName.Trim(),
@@ -49,6 +50,7 @@ public sealed class AuthService(
 
         var customer = new Customer
         {
+            TenantId = tenantId,
             UserId = user.Id,
             FirstName = user.FirstName,
             LastName = user.LastName,
@@ -60,7 +62,7 @@ public sealed class AuthService(
             ConsentUpdatedAt = DateTime.UtcNow
         };
 
-        db.AddRange(user, customer, new LoyaltyAccount { CustomerId = customer.Id });
+        db.AddRange(user, customer, new LoyaltyAccount { TenantId = tenantId, CustomerId = customer.Id });
         audit.Record(AuditActions.Register, user.Id, tenantId, ip);
 
         return await IssueTokensAsync(user, Guid.NewGuid(), ip, previous: null, ct);

@@ -1,4 +1,4 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Platform.API.Core.Entities;
@@ -22,7 +22,7 @@ public sealed record PageDto(string Slug, string Title, JsonElement Content, boo
 public sealed record PageSummaryDto(string Slug, string Title, bool IsPublished, DateTime? UpdatedAt);
 
 public sealed record UpsertPageRequest(
-    [property: Required, StringLength(150)] string Title,
+    [Required, StringLength(150)] string Title,
     JsonElement Content,
     bool IsPublished);
 
@@ -75,3 +75,4 @@ public sealed class PageService(AppDbContext db)
         await db.SaveChangesAsync(ct);
     }
 }
+
